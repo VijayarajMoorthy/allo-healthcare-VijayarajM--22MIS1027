@@ -4,31 +4,31 @@ An assignment submission implementing a robust, race-condition-safe inventory re
 
 ---
 
-## ⚡ Key Features
+# ⚡ Key Features
 
-### 1. Product Catalog Dashboard
+## 1. Product Catalog Dashboard
 - Live inventory stock indicators:
   - **In Stock**
   - **Low Stock**
   - **Out of Stock**
 - Inventory data syncs directly with Supabase PostgreSQL.
 
-### 2. Concurrency-Safe Reservations
+## 2. Concurrency-Safe Reservations
 - Prevents overselling during simultaneous checkout attempts.
 - Uses PostgreSQL row-level locking with `SELECT ... FOR UPDATE`.
 - Ensures only one transaction can reserve a product inventory row at a time.
 
-### 3. Automatic Reservation Expiration
+## 3. Automatic Reservation Expiration
 - Reservations automatically expire after 10 minutes.
 - Expired reservations release reserved stock back into inventory.
 - No cron jobs or Redis workers required.
 
-### 4. Interactive Checkout Experience
+## 4. Interactive Checkout Experience
 - Real-time reservation countdown timer.
 - Urgent warning state when less than 2 minutes remain.
 - Clean handling of expired reservation states.
 
-### 5. Modern UI
+## 5. Modern UI
 - Built using Tailwind CSS v4 and shadcn/ui.
 - Glassmorphism cards and responsive layouts.
 - Lucide icons and toast notifications for polished UX.
@@ -140,26 +140,30 @@ http://localhost:3000
 
 ---
 
-# ✅ Core Concepts Demonstrated
+# 🔄 Expiry Mechanism in Production
 
-- Database Transactions
-- PostgreSQL Row-Level Locking
-- Concurrency Control
-- Inventory Reservation Systems
-- Race Condition Prevention
-- Lazy Expiration Strategy
-- Full Stack Development with Next.js + Prisma
-- Real-Time UI State Management
+The application uses a lazy expiration strategy instead of background cron jobs or Redis workers.
+
+Whenever a reservation is fetched, confirmed, or updated, the backend checks:
+- whether the reservation is still `pending`
+- whether `expiresAt` is older than the current time
+
+If expired:
+- the reservation status is changed to `released`
+- reserved inventory is returned back to stock
+
+This approach keeps infrastructure simple and reduces operational overhead while still maintaining inventory consistency.
+
+---
+
+# ⚖️ Trade-offs Made
+
+- Used lazy expiration instead of scheduled background jobs to keep deployment simple and lightweight.
+- Chose PostgreSQL row-level locking over distributed locking systems since this application runs on a single relational database.
+- Inventory updates are transaction-safe but currently optimized for assignment-scale traffic rather than massive distributed systems.
 
 ---
 
-# 📸 Future Improvements
 
-- WebSocket-based live inventory updates
-- Reservation analytics dashboard
-- Multi-warehouse inventory optimization
-- Distributed locking for microservices
-- Background cleanup workers for analytics/reporting
-- Payment gateway integration
 
----
+The deployed link  : https://allohealthcarevijayarajm.vercel.app/
